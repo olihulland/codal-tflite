@@ -1,20 +1,25 @@
 include("${CODAL_UTILS_LOCATION}")
 
-RECURSIVE_FIND_DIR(INCLUDE_DIRS "./inc" "*.h")
-list(APPEND INCLUDE_DIRS "./third_party/")
-list(APPEND INCLUDE_DIRS "./third_party/ruy")
-list(APPEND INCLUDE_DIRS "./third_party/flatbuffers/include")
-list(APPEND INCLUDE_DIRS "./third_party/gemmlowp/")
-RECURSIVE_FIND_DIR(TENSORFLOW_DIRS "./inc" "*.h")
-list(APPEND INCLUDE_DIRS TENSORFLOW_DIRS)
+# codal-tflite api
+RECURSIVE_FIND_DIR(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/inc" "*.h")
+
+# tensorflow lite
+list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/")
+
+# third party - it's a bit weird so have specifics
+list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/third_party/")
+list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/third_party/ruy")
+list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/third_party/flatbuffers/include")
+list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/third_party/gemmlowp/")
+list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/third_party/kissfft/")
 
 # In the case of flatbuffers we need to remove this directory or its string.h file with clash with stdlib <string.h>
-list(FILTER INCLUDE_DIRS EXCLUDE REGEX "./third_party/flatbuffers/include/flatbuffers")
+list(FILTER INCLUDE_DIRS EXCLUDE REGEX "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/third_party/flatbuffers/include/flatbuffers")
 
-RECURSIVE_FIND_FILE(SOURCE_FILES "./" "*.cpp")
-RECURSIVE_FIND_FILE(CC_FILES "./" "*.cc")
-RECURSIVE_FIND_FILE(S_FILES "./" "*.s")
-RECURSIVE_FIND_FILE(C_FILES "./" "*.c")
+RECURSIVE_FIND_FILE(SOURCE_FILES "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/" "*.cpp")
+RECURSIVE_FIND_FILE(CC_FILES "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/" "*.cc")
+RECURSIVE_FIND_FILE(S_FILES "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/" "*.s")
+RECURSIVE_FIND_FILE(C_FILES "${PROJECT_SOURCE_DIR}/libraries/codal-tflite/" "*.c")
 list(APPEND SOURCE_FILES ${CC_FILES})
 list(APPEND SOURCE_FILES ${S_FILES})
 list(APPEND SOURCE_FILES ${C_FILES})
