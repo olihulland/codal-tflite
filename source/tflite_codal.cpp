@@ -5,12 +5,13 @@ TfLiteCodal::TfLiteCodal() {
     interpreter = nullptr;
     inputTensor = nullptr;
     outputTensor = nullptr;
-    kTensorArenaSize = 2000;        // TODO explore how we can adjust this
-    tensorArena = new uint8_t[kTensorArenaSize];
 }
 
-void TfLiteCodal::initialise(const unsigned char * model) {
+void TfLiteCodal::initialise(const unsigned char * model, int arenaSize) {
     // tflite::InitializeTarget();    // TODO this does nothing - based on system_setup.cc
+
+    kTensorArenaSize = arenaSize;
+    tensorArena = new uint8_t[kTensorArenaSize];
 
     this->model = tflite::GetModel(model);
     if (this->model->version() != TFLITE_SCHEMA_VERSION) {
@@ -39,17 +40,11 @@ void TfLiteCodal::initialise(const unsigned char * model) {
     this->outputTensor = this->interpreter->output(0);
 }
 
-void * TfLiteCodal::infer(void * input, TensorType inputType) { // TODO explore having a different output type to input type
-    // set input tensor and find pointer to output tensor
-    void * output = nullptr;
+void * TfLiteCodal::inferArray(void * input, TensorType inputType, int arrayLen) {
     switch (inputType) {
-        case TfLiteCodal::TensorType::TT_INT8:
-            this->inputTensor->data.int8[0] = *((int8_t*) input);
-            output = &this->outputTensor->data.int8;
-            break;
         case TfLiteCodal::TensorType::TT_FLOAT:
-            this->inputTensor->data.f[0] = *((float*) input);
-            output = &this->outputTensor->data.f[0];
+            for (int i = 0; i < arrayLen; i++)
+                this->inputTensor->data.f[i] = ((float*) input)[i];
             break;
     }
 
@@ -61,5 +56,27 @@ void * TfLiteCodal::infer(void * input, TensorType inputType) { // TODO explore 
         return nullptr;
     }
 
-    return output;
+    return outputTensor->data.data;
+}
+
+void * TfLiteCodal::infer(void * input, TensorType inputType) {
+    // set input tensor and find pointer to output tensor
+    switch (inputType) {
+        case TfLiteCodal::TensorType::TT_INT8:
+            this->inputTensor->data.int8[0] = *((int8_t*) input);
+            break;
+        case TfLiteCodal::TensorType::TT_FLOAT:
+            this->inputTensor->data.f[0] = *((float*) input);
+            break;
+    }
+
+    // run inference
+    TfLiteStatus invoke_status = interpreter->Invoke();
+    if (invoke_status != kTfLiteOk) {
+        MicroPrintf("Invoke failed");
+        // TODO handle error better
+        return nullptr;
+    }
+
+    return outputTensor->data.data;
 }

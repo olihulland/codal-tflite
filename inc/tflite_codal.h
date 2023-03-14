@@ -37,7 +37,7 @@ class TfLiteCodal {
          * 
          * @param model The converted model to use for inference.
          */
-        void initialise(const unsigned char* model);
+        void initialise(const unsigned char* model, int arenaSize);
         
         /**
          * Enum of the data types supported by a tensor for input/output.
@@ -69,6 +69,8 @@ class TfLiteCodal {
          * @return void* a pointer to the output data - e.g. can dereference this using *((float*) output) 
          */
         void * infer(void * input, TensorType inputType);
+
+        void * inferArray(void *input, TensorType inputType, int arrayLen);
 };
 
 #endif  // TENSORFLOW_LITE_CODAL_H
